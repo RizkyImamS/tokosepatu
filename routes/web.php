@@ -16,6 +16,7 @@ Route::get('/sepatu', [FrontController::class, 'listSepatu'])->name('sepatu.list
 Route::get('/sepatu/{id}', [FrontController::class, 'detail'])->name('sepatu.show');
 // Route untuk menampilkan sepatu berdasarkan kategori di sisi User/Frontend
 Route::get('/kategori/{id}', [FrontController::class, 'category'])->name('frontend.category');
+Route::get('/list-sepatu', [FrontController::class, 'listSepatu'])->name('frontend.listSepatu');
 
 
 
@@ -23,6 +24,9 @@ Route::get('/kategori/{id}', [FrontController::class, 'category'])->name('fronte
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 // Tambah ke Keranjang
 Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
+// Update jumlah item di keranjang
+// Tambahkan baris ini di routes/web.php
+Route::post('/change-quantity', [App\Http\Controllers\CartController::class, 'changeQuantity'])->name('cart.changeQuantity');
 // Hapus satu item
 Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 // Halaman untuk checkout

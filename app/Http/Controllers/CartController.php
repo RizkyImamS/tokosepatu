@@ -45,6 +45,40 @@ class CartController extends Controller
         ]);
     }
 
+    public function changeQuantity(Request $request)
+    {
+        $id = $request->id;
+        $action = $request->action;
+
+        $cart = session()->get('cart');
+
+        // Cek apakah produk ada di keranjang
+        if (isset($cart[$id])) {
+
+            // Logika Kurang
+            if ($action === 'decrease') {
+                if ($cart[$id]['quantity'] > 1) {
+                    $cart[$id]['quantity']--;
+                } else {
+                    // Opsional: Jika sisa 1 dan dikurang, biarkan tetap 1 (atau hapus)
+                    $cart[$id]['quantity'] = 1;
+                }
+            }
+            // Logika Tambah
+            else {
+                $cart[$id]['quantity']++;
+            }
+
+            // SIMPAN PERUBAHAN
+            session()->put('cart', $cart);
+
+            // Kirim respon sukses
+            return response()->json(['status' => 'success']);
+        }
+
+        return response()->json(['status' => 'error', 'message' => 'Produk tidak ditemukan'], 404);
+    }
+
     public function remove($id)
     {
         $cart = session()->get('cart', []);

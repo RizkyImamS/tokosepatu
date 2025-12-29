@@ -65,6 +65,40 @@
         overflow: hidden;
         border-radius: 20px;
         background: #f8f9fa;
+        position: relative;
+        cursor: zoom-in;
+    }
+
+    /* Zoom Preview Container */
+    .drift-bounding-box {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    /* Ukuran Selector */
+    .size-selector input[type="radio"] {
+        display: none;
+    }
+
+    .size-selector label {
+        display: inline-block;
+        padding: 10px 18px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+
+    .size-selector input[type="radio"]:checked+label {
+        border-color: #0d6efd;
+        background-color: #f0f7ff;
+        color: #0d6efd;
+    }
+
+    .size-selector label:hover {
+        border-color: #0d6efd;
     }
 
     .buy-section {
@@ -145,7 +179,8 @@
                     <div class="col-8">
                         <form action="{{ route('cart.add', $sepatu->id) }}" method="POST">
                             @csrf
-                            <button class="btn btn-primary btn-cart w-100 shadow-sm" {{ $sepatu->stok <= 0 ? 'disabled' : '' }}>
+                            <button type="button"
+                                class="btn btn-primary btn-cart w-100 shadow-sm add-to-cart-btn" data-id="{{ $sepatu->id }}" {{ $sepatu->stok <= 0 ? 'disabled' : '' }}>
                                 <i class="fas fa-cart-plus me-2"></i> Tambah Ke Keranjang
                             </button>
                         </form>

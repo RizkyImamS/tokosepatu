@@ -31,7 +31,29 @@
                         </div>
                     </td>
                     <td>Rp {{ number_format($details['harga'], 0, ',', '.') }}</td>
-                    <td>{{ $details['quantity'] }}</td>
+                    <td>
+                        <div class="input-group input-group-sm" style="width: 120px;">
+                            <button class="btn btn-outline-secondary update-cart"
+                                type="button"
+                                data-id="{{ $id }}"
+                                data-action="decrease">
+                                <i class="fas fa-minus"></i>
+                            </button>
+
+                            <input type="text"
+                                class="form-control text-center bg-white quantity-input-{{ $id }}"
+                                value="{{ $details['quantity'] }}"
+                                readonly>
+
+                            <button class="btn btn-outline-secondary update-cart"
+                                type="button"
+                                data-id="{{ $id }}"
+                                data-action="increase">
+                                <i class="fas fa-plus"></i>
+                            </button>
+
+                        </div>
+                    </td>
                     <td class="fw-bold">Rp {{ number_format($details['harga'] * $details['quantity'], 0, ',', '.') }}</td>
                     <td>
                         <form action="{{ route('cart.remove', $id) }}" method="POST">
@@ -60,6 +82,11 @@
             </div>
         </div>
     </div>
+    <div class="mt-5 pt-4 border-top">
+        <a href="{{ url('/') }}" class="text-decoration-none text-primary fw-bold">
+            <i class="fas fa-arrow-left me-2"></i> Kembali Belanja
+        </a>
+    </div>
     @else
     <div class="text-center py-5">
         <i class="fas fa-shopping-basket fa-5x text-secondary opacity-25 mb-3"></i>
@@ -68,4 +95,51 @@
     </div>
     @endif
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+
+        // Debugging: Cek apakah script jalan
+        console.log('Script Keranjang Siap!');
+
+        $('.update-cart').on('click', function(e) {
+            e.preventDefault();
+
+            let btn = $(this);
+            let id = btn.data('id');
+            let action = btn.data('action');
+
+            // Debugging: Cek data sebelum dikirim
+            console.log('Klik ID:', id, 'Action:', action);
+
+            $.ajax({
+                url: "{{ route('cart.changeQuantity') }}", // Panggil route baru
+                method: "POST",
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: id,
+                    action: action
+                },
+                beforeSend: function() {
+                    // Efek loading (opsional)
+                    btn.prop('disabled', true);
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        // Reload halaman agar angka dan total harga terupdate
+                        window.location.reload();
+                    } else {
+                        alert('Gagal: ' + response.message);
+                        btn.prop('disabled', false);
+                    }
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                    alert('Terjadi kesalahan sistem. Cek Console.');
+                    btn.prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
 @endsection

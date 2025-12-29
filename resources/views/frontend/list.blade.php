@@ -76,7 +76,6 @@
         line-clamp: 2;
     }
 </style>
-
 <div class="hero-section text-center">
     <div class="container">
         <h1 class="display-3 fw-bold mb-3 animate__animated animate__fadeInDown">Langkah Baru, Gaya Baru</h1>

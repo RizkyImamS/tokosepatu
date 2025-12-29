@@ -8,16 +8,20 @@ use App\Models\KategoriSepatu;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Order;
+use Illuminate\Support\Facades\App;
+use SebastianBergmann\CodeCoverage\Filter;
 
 class SepatuController extends Controller
 {
     // CRUD Sepatu Management
     // Sepatu index method
-    public function index()
+    public function index(Request $request)
     {
         // Code to list all sepatu
         $sepatu = Sepatu::with('kategori')->latest()->get();
-        return view('admin.sepatu.index', compact('sepatu'));
+        $kategoriSepatu = KategoriSepatu::all();
+
+        return view('admin.sepatu.index', compact('sepatu', 'kategoriSepatu'));
     }
 
     public function create()
@@ -81,7 +85,7 @@ class SepatuController extends Controller
         $input = $request->all();
 
         // Update Slug Here
-        $input['slug'] = Str::slug($request->nama);
+        $input['slug'] = Str::slug($request->nama_sepatu);
 
         if ($request->hasFile('gambar')) {
             $input['gambar'] = $request->file('gambar')->store('sepatu_images', 'public');

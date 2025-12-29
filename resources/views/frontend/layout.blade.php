@@ -50,18 +50,55 @@
             color: #0d6efd !important;
         }
 
-        .btn-admin {
-            background-color: #333;
+        /* Revamped Login Button Styling */
+        .btn-login {
+            background-color: transparent;
+            color: #0d6efd !important;
+            /* Warna Biru Utama */
+            border: 2px solid #0d6efd;
+            border-radius: 50px;
+            /* Membuat lonjong sempurna */
+            padding: 8px 24px !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-login i {
+            font-size: 0.85rem;
+            transition: transform 0.3s;
+        }
+
+        .btn-login:hover {
+            background-color: #0d6efd;
             color: white !important;
-            border-radius: 8px;
-            padding: 8px 20px !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25);
+        }
+
+        .btn-login:hover i {
+            transform: translateX(2px);
+            /* Efek ikon sedikit bergeser saat hover */
+        }
+
+        /* Opsional: Jika ingin gaya yang lebih 'Bold' seperti tombol hitam sebelumnya tapi lebih smooth */
+        .btn-admin-dark {
+            background: #222;
+            color: #fff !important;
+            border-radius: 12px;
+            padding: 10px 25px !important;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transition: all 0.3s;
         }
 
-        .btn-admin:hover {
-            background-color: #000;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        .btn-admin-dark:hover {
+            background: #000;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
         }
 
         /* Footer Styling */
@@ -139,7 +176,7 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Kategori
+                            Produk
                         </a>
                         <ul class="dropdown-menu border-0 shadow animate__animated animate__fadeInUp" aria-labelledby="navbarDropdown">
                             @forelse($kategoriSepatu as $kat)
@@ -155,7 +192,7 @@
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
-                                <a class="dropdown-item fw-bold text-primary" href="{{ url('/') }}">
+                                <a class="dropdown-item fw-bold text-primary" href="{{ url('/list-sepatu') }}">
                                     Semua Produk
                                 </a>
                             </li>
@@ -175,7 +212,7 @@
                     </li>
 
                     <li class="nav-item ms-lg-3">
-                        <a class="nav-link btn-admin" href="{{ route('sepatu.index') }}">
+                        <a class="nav-link btn-login" href="{{ route('sepatu.index') }}">
                             <i class="fas fa-lock me-1"></i> Login
                         </a>
                     </li>
@@ -204,7 +241,7 @@
                 <div class="col-lg-2 offset-lg-1">
                     <h5 class="text-white fw-bold mb-4">Belanja</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="footer-link">Semua Produk</a></li>
+                        <li class="mb-2"><a href="#produk" class="footer-link">Semua Produk</a></li>
                         <li class="mb-2"><a href="#" class="footer-link">Cara Order</a></li>
                         <li class="mb-2"><a href="#" class="footer-link">Konfirmasi Bayar</a></li>
                     </ul>
