@@ -187,75 +187,42 @@
                     </div>
                     <div class="col-4">
                         @php
+                        // Ambil data wishlist dari session
+                        $wishlistSession = session()->get('wishlist', []);
+
+                        // Cek apakah variabel $sepatu ada, lalu cek apakah ID-nya ada di session
                         $isWishlisted = false;
-                        if(Auth::check()){
-                        $isWishlisted = \App\Models\Wishlist::where('user_id', Auth::id())->where('sepatu_id', $sepatu->id)->exists();
+                        if(isset($sepatu) && isset($wishlistSession[$sepatu->id])) {
+                        $isWishlisted = true;
                         }
                         @endphp
+
                         <button type="button"
                             class="btn btn-cart w-100 btn-wishlist {{ $isWishlisted ? 'btn-danger text-white' : 'btn-outline-dark' }}"
-                            data-id="{{ $sepatu->id }}">
+                            data-id="{{ $sepatu->id ?? '' }}">
                             <i class="{{ $isWishlisted ? 'fas' : 'far' }} fa-heart"></i>
                         </button>
                     </div>
+                    @if($sepatu->stok <= 0)
+                        <p class="text-danger small mt-2 mb-0 text-center"><i class="fas fa-info-circle"></i> Maaf, stok barang sedang kosong.</p>
+                        @endif
                 </div>
-                @if($sepatu->stok <= 0)
-                    <p class="text-danger small mt-2 mb-0 text-center"><i class="fas fa-info-circle"></i> Maaf, stok barang sedang kosong.</p>
-                    @endif
-            </div>
 
-            <div class="d-flex align-items-center gap-3 mt-4 text-muted">
-                <span class="small fw-bold">Bagikan:</span>
-                <div class="d-flex gap-2">
-                    <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-whatsapp"></i></a>
-                    <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-twitter"></i></a>
+                <div class="d-flex align-items-center gap-3 mt-4 text-muted">
+                    <span class="small fw-bold">Bagikan:</span>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-twitter"></i></a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mt-5 pt-4 border-top">
-                <a href="{{ url('/') }}" class="text-decoration-none text-primary fw-bold">
-                    <i class="fas fa-arrow-left me-2"></i> Kembali Belanja
-                </a>
+                <div class="mt-5 pt-4 border-top">
+                    <a href="{{ url('/') }}" class="text-decoration-none text-primary fw-bold">
+                        <i class="fas fa-arrow-left me-2"></i> Kembali Belanja
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-    $(document).ready(function() {
-        $('.btn-wishlist').on('click', function() {
-            let btn = $(this);
-            let icon = btn.find('i');
-            let sepatuId = btn.data('id');
-
-            $.ajax({
-                url: "{{ route('wishlist.toggle') }}",
-                method: "POST",
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    sepatu_id: sepatuId
-                },
-                success: function(response) {
-                    if (response.status === 'added') {
-                        // Berubah jadi merah
-                        btn.removeClass('btn-outline-dark').addClass('btn-danger text-white');
-                        icon.removeClass('far').addClass('fas');
-                    } else {
-                        // Kembali ke outline
-                        btn.removeClass('btn-danger text-white').addClass('btn-outline-dark');
-                        icon.removeClass('fas').addClass('far');
-                    }
-                },
-                error: function(xhr) {
-                    if (xhr.status === 401) {
-                        alert('Silakan login terlebih dahulu untuk menambah wishlist.');
-                        window.location.href = "{{ route('login') }}";
-                    } else {
-                        alert('Terjadi kesalahan, coba lagi nanti.');
-                    }
-                }
-            });
-        });
-    });
-</script>
-@endsection
+    @endsection

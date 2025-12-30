@@ -117,23 +117,37 @@ class FrontController extends Controller
 
     public function toggleWishlist(Request $request)
     {
-        if (!Auth::check()) {
-            return response()->json(['status' => 'unauthorized'], 401);
-        }
+        $id = $request->sepatu_id;
+        $wishlist = session()->get('wishlist', []);
 
-        $exists = Wishlist::where('user_id', Auth::id())
-            ->where('sepatu_id', $request->sepatu_id)
-            ->first();
-
-        if ($exists) {
-            $exists->delete();
-            return response()->json(['status' => 'removed']);
+        if (isset($wishlist[$id])) {
+            unset($wishlist[$id]);
+            $status = 'removed';
         } else {
-            Wishlist::create([
-                'user_id' => Auth::id(),
-                'sepatu_id' => $request->sepatu_id
-            ]);
-            return response()->json(['status' => 'added']);
+            $wishlist[$id] = [
+                "id" => $id,
+                "added_at" => now()
+            ];
+            $status = 'added';
         }
+
+        session()->put('wishlist', $wishlist);
+
+        return response()->json([
+            'status' => $status,
+            'wishlist_count' => count($wishlist)
+        ]);
+    }
+
+    public function indexWishlist()
+    {
+        $wishlistSession = session()->get('wishlist', []);
+        $ids = array_keys($wishlistSession);
+        $kategoriSepatu = KategoriSepatu::all();
+
+        // Ambil data sepatu dari database berdasarkan ID yang ada di session
+        $wishlist = \App\Models\Sepatu::whereIn('id', $ids)->get();
+
+        return view('frontend.wishlist', compact('wishlist', 'kategoriSepatu'));
     }
 }

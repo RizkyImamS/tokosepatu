@@ -207,6 +207,15 @@
                         <a class="nav-link {{ request()->is('contact') ? 'text-primary' : '' }}" href="{{ route('contact') }}">Kontak</a>
                     </li>
 
+                    <li class="nav-item mx-1">
+                        <a class="nav-link position-relative" href="{{ route('wishlist.index') }}">
+                            <i class="fas fa-heart fa-lg text-danger"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger wishlist-badge">
+                                {{ session()->get('wishlist') ? count(session()->get('wishlist')) : 0 }}
+                            </span>
+                        </a>
+                    </li>
+
                     <li class="nav-item mx-2">
                         <a class="nav-link position-relative" href="{{ route('cart.index') }}">
                             <i class="fas fa-shopping-cart fa-lg"></i>
@@ -444,6 +453,110 @@
                     alert('Gagal terhubung ke server. Pastikan Server Key Midtrans sudah benar.');
                     btn.prop('disabled', false).html(originalText);
                 }
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            // Menggunakan $(document).on agar lebih akurat mendeteksi klik
+            $(document).on('click', '.btn-wishlist', function(e) {
+                e.preventDefault();
+
+                let btn = $(this);
+                let icon = btn.find('i');
+                let sepatuId = btn.data('id');
+
+                // Beri efek loading sederhana
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: "{{ route('wishlist.toggle') }}",
+                    method: "POST",
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'), // Mengambil token dari meta head
+                        sepatu_id: sepatuId
+                    },
+                    success: function(response) {
+                        btn.prop('disabled', false);
+
+                        if (response.status === 'added') {
+                            btn.removeClass('btn-outline-dark').addClass('btn-danger text-white');
+                            icon.removeClass('far').addClass('fas');
+
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-start',
+                                icon: 'success',
+                                title: 'Disimpan ke Wishlist',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        } else {
+                            btn.removeClass('btn-danger text-white').addClass('btn-outline-dark');
+                            icon.removeClass('fas').addClass('far');
+                        }
+
+                        // Update angka di badge navbar jika ada class .wishlist-badge
+                        $('.wishlist-badge').text(response.wishlist_count);
+                    },
+                    error: function(xhr) {
+                        btn.prop('disabled', false);
+                        console.error(xhr.responseText);
+                        alert('Gagal memproses wishlist. Cek console log.');
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $(document).on('click', '.btn-remove-wishlist', function(e) {
+                e.preventDefault();
+                let id = $(this).data('id');
+                let card = $(`#wishlist-item-${id}`);
+
+                Swal.fire({
+                    title: 'Hapus Produk?',
+                    text: "Produk akan dihapus dari wishlist Anda.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "{{ route('wishlist.toggle') }}",
+                            method: "POST",
+                            data: {
+                                _token: "{{ csrf_token() }}",
+                                sepatu_id: id
+                            },
+                            success: function(response) {
+                                if (response.status === 'removed') {
+                                    card.fadeOut(400, function() {
+                                        $(this).remove();
+                                        // Cek jika sudah tidak ada item lagi
+                                        if ($('.wishlist-item').length === 0) {
+                                            location.reload();
+                                        }
+                                    });
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Terhapus!',
+                                        text: 'Produk telah dihapus dari wishlist.',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+
+                                    $('.wishlist-badge').text(response.wishlist_count);
+                                }
+                            }
+                        });
+                    }
+                });
             });
         });
     </script>
