@@ -94,4 +94,22 @@ class FrontController extends Controller
         $kategoriSepatu = KategoriSepatu::all();
         return view('frontend.list', compact('sepatu', 'kategoriSepatu'));
     }
+
+    // about
+
+    public function about()
+    {
+        $kategoriSepatu = KategoriSepatu::all();
+        $konfigurasi = Konfigurasi::first();
+        return view('frontend.about', compact('kategoriSepatu', 'konfigurasi'));
+    }
+
+    // contact
+
+    public function contact()
+    {
+        $kategoriSepatu = KategoriSepatu::all();
+        $konfigurasi = Konfigurasi::first();
+        return view('frontend.contact', compact('kategoriSepatu', 'konfigurasi'));
+    }
 }

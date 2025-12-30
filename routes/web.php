@@ -12,11 +12,12 @@ use App\Http\Controllers\CartController;
 
 // Frontend Routes
 Route::get('/', [FrontController::class, 'index'])->name('home');
-Route::get('/sepatu', [FrontController::class, 'listSepatu'])->name('sepatu.list');
 Route::get('/sepatu/{id}', [FrontController::class, 'detail'])->name('sepatu.show');
 // Route untuk menampilkan sepatu berdasarkan kategori di sisi User/Frontend
 Route::get('/kategori/{id}', [FrontController::class, 'category'])->name('frontend.category');
 Route::get('/list-sepatu', [FrontController::class, 'listSepatu'])->name('frontend.listSepatu');
+Route::get('/about', [FrontController::class, 'about'])->name('about');
+Route::get('/contact', [FrontController::class, 'contact'])->name('contact');
 
 
 
