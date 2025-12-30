@@ -186,8 +186,16 @@
                         </form>
                     </div>
                     <div class="col-4">
-                        <button class="btn btn-outline-dark btn-cart w-100">
-                            <i class="far fa-heart"></i>
+                        @php
+                        $isWishlisted = false;
+                        if(Auth::check()){
+                        $isWishlisted = \App\Models\Wishlist::where('user_id', Auth::id())->where('sepatu_id', $sepatu->id)->exists();
+                        }
+                        @endphp
+                        <button type="button"
+                            class="btn btn-cart w-100 btn-wishlist {{ $isWishlisted ? 'btn-danger text-white' : 'btn-outline-dark' }}"
+                            data-id="{{ $sepatu->id }}">
+                            <i class="{{ $isWishlisted ? 'fas' : 'far' }} fa-heart"></i>
                         </button>
                     </div>
                 </div>
@@ -213,4 +221,41 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function() {
+        $('.btn-wishlist').on('click', function() {
+            let btn = $(this);
+            let icon = btn.find('i');
+            let sepatuId = btn.data('id');
+
+            $.ajax({
+                url: "{{ route('wishlist.toggle') }}",
+                method: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    sepatu_id: sepatuId
+                },
+                success: function(response) {
+                    if (response.status === 'added') {
+                        // Berubah jadi merah
+                        btn.removeClass('btn-outline-dark').addClass('btn-danger text-white');
+                        icon.removeClass('far').addClass('fas');
+                    } else {
+                        // Kembali ke outline
+                        btn.removeClass('btn-danger text-white').addClass('btn-outline-dark');
+                        icon.removeClass('fas').addClass('far');
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        alert('Silakan login terlebih dahulu untuk menambah wishlist.');
+                        window.location.href = "{{ route('login') }}";
+                    } else {
+                        alert('Terjadi kesalahan, coba lagi nanti.');
+                    }
+                }
+            });
+        });
+    });
+</script>
 @endsection

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Sepatu;
 use App\Models\KategoriSepatu;
 use App\Models\Konfigurasi;
+use App\Models\Wishlist;
+use Illuminate\Support\Facades\Auth;
 
 class FrontController extends Controller
 {
@@ -111,5 +113,27 @@ class FrontController extends Controller
         $kategoriSepatu = KategoriSepatu::all();
         $konfigurasi = Konfigurasi::first();
         return view('frontend.contact', compact('kategoriSepatu', 'konfigurasi'));
+    }
+
+    public function toggleWishlist(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
+
+        $exists = Wishlist::where('user_id', Auth::id())
+            ->where('sepatu_id', $request->sepatu_id)
+            ->first();
+
+        if ($exists) {
+            $exists->delete();
+            return response()->json(['status' => 'removed']);
+        } else {
+            Wishlist::create([
+                'user_id' => Auth::id(),
+                'sepatu_id' => $request->sepatu_id
+            ]);
+            return response()->json(['status' => 'added']);
+        }
     }
 }
