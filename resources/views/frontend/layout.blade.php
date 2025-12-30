@@ -199,6 +199,14 @@
                         </ul>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('about') ? 'text-primary' : '' }}" href="{{ route('about') }}">Tentang Kami</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('contact') ? 'text-primary' : '' }}" href="{{ route('contact') }}">Kontak</a>
+                    </li>
+
                     <li class="nav-item mx-2">
                         <a class="nav-link position-relative" href="{{ route('cart.index') }}">
                             <i class="fas fa-shopping-cart fa-lg"></i>
