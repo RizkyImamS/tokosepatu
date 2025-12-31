@@ -40,7 +40,7 @@ Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('car
 Route::get('/checkout', [App\Http\Controllers\CartController::class, 'checkout'])->name('cart.checkout');
 Route::post('/checkout/proses', [App\Http\Controllers\CartController::class, 'prosesPembayaran'])->name('cart.proses');
 // Halaman setelah order pending
-Route::get('/order/pending/{order_id}', [App\Http\Controllers\CartController::class, 'orderPending'])->name('order.pending');
+Route::get('/order/pending/{order_id}', [App\Http\Controllers\CartController::class, 'pendingOrder'])->name('order.pending');
 // if order success
 Route::get('/order/success', [App\Http\Controllers\CartController::class, 'orderSuccess'])->name('order.success');
 // cetak invoice

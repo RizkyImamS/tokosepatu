@@ -170,10 +170,20 @@ class SepatuController extends Controller
 
     public function riwayat()
     {
-        // Mengambil data order beserta detail item dan data sepatunya
-        $orders = Order::with('items.sepatu')->latest()->get();
+        // Mengambil SEMUA order, diurutkan dari yang terbaru (latest)
+        // with(['items.sepatu']) memastikan data detail barang ikut terbawa tanpa query berulang
+        $orders = Order::with(['items.sepatu'])->latest()->paginate(10);
 
-        // Mengarahkan ke file view yang ada di resources/views/admin/riwayat/index.blade.php
         return view('admin.riwayat.index', compact('orders'));
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        $order->update([
+            'status_pembayaran' => $request->status // success atau failed
+        ]);
+
+        return back()->with('success', 'Status pembayaran berhasil diperbarui.');
     }
 }

@@ -22,6 +22,7 @@ class Order extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class, 'order_id');
+        // Ini menghubungkan 1 Order ke banyak OrderItem
+        return $this->hasMany(OrderItem::class, 'order_id', 'id');
     }
 }

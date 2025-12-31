@@ -18,7 +18,7 @@ class OrderItem extends Model
 
     public function sepatu()
     {
-        return $this->belongsTo(Sepatu::class);
+        return $this->belongsTo(Sepatu::class, 'sepatu_id');
     }
 
     public function order()
