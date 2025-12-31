@@ -45,6 +45,12 @@
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-danger">Hapus</button>
                     </form>
+
+                </div>
+                <div class="d-flex gap-1 mt-2">
+                    <a href="{{ route('sepatu.show', $item->id) }}" class="btn btn-sm btn-info text-white">
+                        <i class="fas fa-eye"></i> Details
+                    </a>
                 </div>
             </td>
         </tr>

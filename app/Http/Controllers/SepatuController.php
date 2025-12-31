@@ -97,12 +97,13 @@ class SepatuController extends Controller
 
     public function show($id)
     {
-        // Code to show specific sepatu
-        $sepatu = Sepatu::findOrFail($id);
+        $sepatu = Sepatu::with('kategori')->findOrFail($id);
+        $kategoriSepatu = KategoriSepatu::all();
 
-        // Delete file image from storage if exists
-        return view('admin.sepatu.show', compact('sepatu'));
+        return view('admin.sepatu.show', compact('sepatu', 'kategoriSepatu'));
     }
+
+
 
     public function destroy($id)
     {

@@ -12,7 +12,7 @@ use App\Http\Controllers\CartController;
 
 // Frontend Routes
 Route::get('/', [FrontController::class, 'index'])->name('home');
-Route::get('/sepatu/{id}', [FrontController::class, 'detail'])->name('sepatu.show');
+Route::get('/sepatu/{id}', [FrontController::class, 'detail'])->name('sepatu.detail');
 // Route untuk menampilkan sepatu berdasarkan kategori di sisi User/Frontend
 Route::get('/kategori/{id}', [FrontController::class, 'category'])->name('frontend.category');
 Route::get('/list-sepatu', [FrontController::class, 'listSepatu'])->name('frontend.listSepatu');
@@ -57,7 +57,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+    // resource controller untuk sepatu
     Route::resource('admin/sepatu', App\Http\Controllers\SepatuController::class);
+    // Pastikan ada parameter {id}
     Route::resource('admin/konfigurasi', App\Http\Controllers\KonfigurasiController::class);
     Route::resource('admin/user', App\Http\Controllers\UserController::class);
     Route::get('/admin/riwayat', [App\Http\Controllers\SepatuController::class, 'riwayat'])->name('riwayat.index');
