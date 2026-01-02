@@ -35,14 +35,27 @@
             <input type="hidden" name="harga" id="harga" value="{{ $sepatu->harga }}">
         </div>
 
-        <div class="mb-3">
-            <label>Stok</label>
-            <input type="number" name="stok" class="form-control" value="{{ $sepatu->stok }}" required>
-        </div>
-
-        <div class="mb-3">
-            <label>Ukuran</label>
-            <input type="text" name="ukuran" class="form-control" value="{{ $sepatu->ukuran }}" required>
+        <hr>
+        <div class="mb-4">
+            <label class="fw-bold d-block mb-2">Stok per Ukuran</label>
+            <div class="row g-3 bg-light p-3 rounded border">
+                @foreach(['37', '38', '39', '40', '41', '42', '43'] as $size)
+                <div class="col-md-3 col-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">Size {{ $size }}</span>
+                        {{-- Ambil value dari array stok_per_ukuran berdasarkan index size --}}
+                        <input type="number"
+                            name="stok_per_ukuran[{{ $size }}]"
+                            class="form-control"
+                            value="{{ $sepatu->stok_per_ukuran[$size] ?? 0 }}"
+                            min="0">
+                    </div>
+                </div>
+                @endforeach
+                <div class="col-12">
+                    <small class="text-muted">* Isi 0 jika ukuran tersebut tidak tersedia.</small>
+                </div>
+            </div>
         </div>
 
         <div class="mb-3">
@@ -68,4 +81,29 @@
         <a href="{{ route('sepatu.index') }}" class="btn btn-secondary">Batal</a>
     </form>
 </div>
+<script>
+    const hargaRupiah = document.getElementById('harga_rupiah');
+    const hargaHidden = document.getElementById('harga');
+
+    hargaRupiah.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, "");
+
+        if (value) {
+            hargaHidden.value = value;
+            let formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            e.target.value = "Rp. " + formatted;
+        } else {
+            hargaHidden.value = "";
+            e.target.value = "";
+        }
+    });
+
+    // Jalankan format saat halaman dimuat pertama kali agar muncul Rp.
+    window.addEventListener('load', () => {
+        if (hargaRupiah.value) {
+            let val = hargaRupiah.value.replace(/\D/g, "");
+            hargaRupiah.value = "Rp. " + val.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+    });
+</script>
 @endsection

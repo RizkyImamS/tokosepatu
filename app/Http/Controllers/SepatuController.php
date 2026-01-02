@@ -39,8 +39,8 @@ class SepatuController extends Controller
             'kategori_sepatu_id' => 'required',
             'merk' => 'required|string|max:50',
             'harga' => 'required|numeric',
-            'stok' => 'required|integer',
-            'ukuran' => 'required|string|max:10',
+            'stok_per_ukuran' => 'required|array',
+            'stok_per_ukuran.*' => 'required|integer|min:0',
             'warna' => 'required|string|max:50',
             'deskripsi' => 'nullable|string',
             'gambar' => 'nullable|mimes:jpeg,png,jpg,avif|max:4096'
@@ -49,6 +49,7 @@ class SepatuController extends Controller
         $input = $request->all();
         // Create Automitation Slug Here
         $input['slug'] = Str::slug($request->nama_sepatu);
+        $input['stok_per_ukuran'] = $request->stok_per_ukuran;
 
         if ($request->hasFile('gambar')) {
             $input['gambar'] = $request->file('gambar')->store('sepatu_images', 'public');
@@ -74,8 +75,7 @@ class SepatuController extends Controller
             'kategori_sepatu_id' => 'required',
             'merk' => 'required|string|max:50',
             'harga' => 'required|numeric',
-            'stok' => 'required|integer',
-            'ukuran' => 'required|string|max:10',
+            'stok_per_ukuran' => 'required|array',
             'warna' => 'required|string|max:50',
             'deskripsi' => 'nullable|string',
             'gambar' => 'nullable|image|max:4096'
@@ -86,6 +86,7 @@ class SepatuController extends Controller
 
         // Update Slug Here
         $input['slug'] = Str::slug($request->nama_sepatu);
+        $input['stok_per_ukuran'] = $request->stok_per_ukuran;
 
         if ($request->hasFile('gambar')) {
             $input['gambar'] = $request->file('gambar')->store('sepatu_images', 'public');

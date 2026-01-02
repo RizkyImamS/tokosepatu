@@ -7,6 +7,7 @@ use App\Models\Sepatu;
 use App\Models\KategoriSepatu;
 use App\Models\Konfigurasi;
 use App\Models\Wishlist;
+use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
 
 class FrontController extends Controller
@@ -103,7 +104,24 @@ class FrontController extends Controller
     {
         $kategoriSepatu = KategoriSepatu::all();
         $konfigurasi = Konfigurasi::first();
-        return view('frontend.about', compact('kategoriSepatu', 'konfigurasi'));
+        $reviews = Review::latest()->get();
+        return view('frontend.about', compact('kategoriSepatu', 'konfigurasi', 'reviews'));
+    }
+
+    // Store review
+    public function storeReview(Request $request)
+    {
+        // validation input
+        $request->validate([
+            'name' => 'required|string|max:50',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string',
+        ]);
+
+        //simpan ke database
+        Review::create($request->all());
+
+        return redirect()->back()->with('success', 'Review berhasil dikirim.');
     }
 
     // contact

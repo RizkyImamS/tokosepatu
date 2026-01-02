@@ -56,39 +56,25 @@
         font-size: 1.1rem;
     }
 
-    .img-main {
-        border-radius: 20px;
-        transition: transform 0.3s ease;
+    .size-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
     }
 
-    .img-container {
-        overflow: hidden;
-        border-radius: 20px;
-        background: #f8f9fa;
-        position: relative;
-        cursor: zoom-in;
-    }
-
-    /* Zoom Preview Container */
-    .drift-bounding-box {
-        background-color: rgba(0, 0, 0, 0.4);
-    }
-
-    /* Ukuran Selector */
     .size-selector input[type="radio"] {
         display: none;
     }
 
     .size-selector label {
         display: inline-block;
-        padding: 10px 18px;
-        border: 2px solid #ddd;
-        border-radius: 10px;
+        padding: 12px 20px;
+        border: 2px solid #eee;
+        border-radius: 12px;
         cursor: pointer;
-        font-weight: 600;
+        font-weight: 700;
         transition: all 0.3s;
-        margin-right: 5px;
-        margin-bottom: 5px;
     }
 
     .size-selector input[type="radio"]:checked+label {
@@ -97,23 +83,26 @@
         color: #0d6efd;
     }
 
-    .size-selector label:hover {
-        border-color: #0d6efd;
+    .size-selector input[type="radio"]:disabled+label {
+        background-color: #f8f9fa;
+        color: #ccc;
+        cursor: not-allowed;
+        border-color: #eee;
     }
 
     .buy-section {
         padding: 25px;
-        background: #f8f9fa;
-        border-radius: 15px;
+        background: #fff;
+        border-radius: 20px;
         border: 1px solid #eee;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
     .btn-cart {
         border-radius: 12px;
-        padding: 12px 25px;
+        padding: 15px 25px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
     }
 </style>
 
@@ -122,8 +111,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ url('/') }}"><i class="fas fa-home"></i> Beranda</a></li>
-                <li class="breadcrumb-item"><a href="#">{{ $sepatu->kategori->nama_kategori ?? 'Koleksi' }}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{ $sepatu->nama_sepatu }}</li>
+                <li class="breadcrumb-item active">{{ $sepatu->nama_sepatu }}</li>
             </ol>
         </nav>
     </div>
@@ -132,11 +120,11 @@
 <div class="container mb-5">
     <div class="row">
         <div class="col-md-6 mb-4">
-            <div class="img-container shadow-sm">
+            <div class="rounded-4 overflow-hidden bg-light shadow-sm">
                 @if($sepatu->gambar)
-                <img src="{{ asset('storage/'.$sepatu->gambar) }}" class="img-fluid img-main w-100" alt="{{ $sepatu->nama_sepatu }}">
+                <img src="{{ asset('storage/'.$sepatu->gambar) }}" class="img-fluid w-100" alt="{{ $sepatu->nama_sepatu }}">
                 @else
-                <div class="d-flex align-items-center justify-content-center bg-light" style="min-height: 400px">
+                <div class="d-flex align-items-center justify-content-center" style="min-height: 450px">
                     <i class="fas fa-shoe-prints fa-5x text-secondary opacity-25"></i>
                 </div>
                 @endif
@@ -144,9 +132,8 @@
         </div>
 
         <div class="col-md-6 px-lg-5">
-            <span class="badge bg-primary px-3 py-2 rounded-pill mb-3 uppercase italic">{{ $sepatu->merk }}</span>
+            <span class="badge bg-primary px-3 py-2 rounded-pill mb-3 text-uppercase">{{ $sepatu->merk }}</span>
             <h1 class="display-5 fw-bold text-dark mb-2">{{ $sepatu->nama_sepatu }}</h1>
-            <p class="text-muted mb-4">Kategori: {{ $sepatu->kategori->nama_kategori ?? 'Umum' }}</p>
 
             <div class="product-price">
                 Rp {{ number_format($sepatu->harga, 0, ',', '.') }}
@@ -154,75 +141,186 @@
 
             <div class="meta-info">
                 <div class="spec-item">
-                    <span class="spec-label">Ukuran Tersedia</span>
-                    <span class="spec-value">{{ $sepatu->ukuran }}</span>
-                </div>
-                <div class="spec-item">
                     <span class="spec-label">Warna</span>
                     <span class="spec-value">{{ $sepatu->warna }}</span>
                 </div>
                 <div class="spec-item">
-                    <span class="spec-label">Stok Barang</span>
-                    <span class="spec-value text-{{ $sepatu->stok > 0 ? 'success' : 'danger' }}">
-                        {{ $sepatu->stok }} Pcs
-                    </span>
+                    <span class="spec-label">Kategori</span>
+                    <span class="spec-value">{{ $sepatu->kategori->nama_kategori ?? 'Umum' }}</span>
+                </div>
+            </div>
+
+            <div class="product-description mb-4">
+                <h5 class="fw-bold text-dark mb-3">Pilih Ukuran</h5>
+
+                <div class="size-selector">
+                    @php $hasStock = false; @endphp
+                    @foreach($sepatu->stok_per_ukuran ?? [] as $size => $stock)
+                    @if($stock > 0)
+                    @php $hasStock = true; @endphp
+                    <input type="radio" name="ukuran" value="{{ $size }}" id="size{{ $size }}">
+                    <label for="size{{ $size }}">
+                        {{ $size }}
+                        <small class="d-block fw-normal text-muted" style="font-size: 0.6rem">Stok: {{ $stock }}</small>
+                    </label>
+                    @else
+                    <input type="radio" name="ukuran" value="{{ $size }}" id="size{{ $size }}" disabled>
+                    <label for="size{{ $size }}" title="Stok Habis">
+                        {{ $size }}
+                        <small class="d-block fw-normal" style="font-size: 0.6rem">Habis</small>
+                    </label>
+                    @endif
+                    @endforeach
+                </div>
+
+                <div class="buy-section mt-4">
+                    <div class="row g-2">
+                        <div class="col-9">
+                            <button type="button" class="btn btn-primary btn-cart w-100 shadow-sm add-to-cart-btn"
+                                data-id="{{ $sepatu->id }}" {{ !$hasStock ? 'disabled' : '' }}>
+                                <i class="fas fa-cart-plus me-2"></i> Tambah Ke Keranjang
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="btn btn-outline-danger btn-cart w-100">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @if(!$hasStock)
+                    <p class="text-danger small mt-3 mb-0 text-center"><i class="fas fa-info-circle"></i> Maaf, semua ukuran kosong.</p>
+                    @endif
                 </div>
             </div>
 
             <div class="product-description mb-5">
                 <h5 class="fw-bold text-dark mb-3">Deskripsi Produk</h5>
-                {!! nl2br(e($sepatu->deskripsi)) !!}
+                <p>{!! nl2br(e($sepatu->deskripsi)) !!}</p>
             </div>
 
-            <div class="buy-section">
-                <div class="row g-2">
-                    <div class="col-8">
-                        <form action="{{ route('cart.add', $sepatu->id) }}" method="POST">
-                            @csrf
-                            <button type="button"
-                                class="btn btn-primary btn-cart w-100 shadow-sm add-to-cart-btn" data-id="{{ $sepatu->id }}" {{ $sepatu->stok <= 0 ? 'disabled' : '' }}>
-                                <i class="fas fa-cart-plus me-2"></i> Tambah Ke Keranjang
-                            </button>
-                        </form>
-                    </div>
-                    <div class="col-4">
-                        @php
-                        // Ambil data wishlist dari session
-                        $wishlistSession = session()->get('wishlist', []);
-
-                        // Cek apakah variabel $sepatu ada, lalu cek apakah ID-nya ada di session
-                        $isWishlisted = false;
-                        if(isset($sepatu) && isset($wishlistSession[$sepatu->id])) {
-                        $isWishlisted = true;
-                        }
-                        @endphp
-
-                        <button type="button"
-                            class="btn btn-cart w-100 btn-wishlist {{ $isWishlisted ? 'btn-danger text-white' : 'btn-outline-dark' }}"
-                            data-id="{{ $sepatu->id ?? '' }}">
-                            <i class="{{ $isWishlisted ? 'fas' : 'far' }} fa-heart"></i>
-                        </button>
-                    </div>
-                    @if($sepatu->stok <= 0)
-                        <p class="text-danger small mt-2 mb-0 text-center"><i class="fas fa-info-circle"></i> Maaf, stok barang sedang kosong.</p>
-                        @endif
-                </div>
-
-                <div class="d-flex align-items-center gap-3 mt-4 text-muted">
-                    <span class="small fw-bold">Bagikan:</span>
-                    <div class="d-flex gap-2">
-                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-twitter"></i></a>
-                    </div>
-                </div>
-
-                <div class="mt-5 pt-4 border-top">
-                    <a href="{{ url('/') }}" class="text-decoration-none text-primary fw-bold">
-                        <i class="fas fa-arrow-left me-2"></i> Kembali Belanja
-                    </a>
-                </div>
+            <div class="pt-4 border-top">
+                <a href="{{ url('/') }}" class="text-decoration-none text-primary fw-bold">
+                    <i class="fas fa-arrow-left me-2"></i> Kembali Belanja
+                </a>
             </div>
         </div>
     </div>
-    @endsection
+</div>
+
+<script>
+    $(document).ready(function() {
+        // --- 1. LOGIC ADD TO CART ---
+        $(document).on('click', '.add-to-cart-btn', function(e) {
+            e.preventDefault();
+
+            let id = $(this).data('id');
+            let ukuran = $('input[name="ukuran"]:checked').val();
+            let btn = $(this);
+            let originalText = btn.html();
+
+            if (!ukuran) {
+                // Alert Peringatan di Atas Kiri
+                Swal.fire({
+                    toast: true,
+                    position: 'top-start',
+                    icon: 'warning',
+                    title: 'Pilih ukuran sepatu dulu ya!',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                return;
+            }
+
+            // Loading state
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memproses...');
+
+            $.ajax({
+                url: "{{ url('/cart/add') }}/" + id,
+                method: "POST",
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    ukuran: ukuran
+                },
+                success: function(response) {
+                    btn.prop('disabled', false).html(originalText);
+
+                    // Update angka navbar
+                    $('.badge-cart-count').text(response.cart_count).hide().fadeIn();
+
+                    // Alert Berhasil di Atas Kiri
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-start',
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Size ' + ukuran + ' masuk keranjang.',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false).html(originalText);
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-start',
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: 'Gagal menambahkan ke keranjang.',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                }
+            });
+        });
+
+        // --- 2. LOGIC CHECKOUT ---
+        $('#formCheckout').on('submit', function(e) {
+            e.preventDefault();
+            const btn = $(this).find('button[type="submit"]');
+            const originalText = btn.html();
+
+            if ($('input[name="customer_name"]').val() == "" || $('input[name="phone"]').val() == "") {
+                Swal.fire('Info', 'Harap isi informasi pengiriman', 'info');
+                return;
+            }
+
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memproses...');
+
+            $.ajax({
+                url: "{{ route('cart.proses') }}",
+                method: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.snap_token) {
+                        window.snap.pay(response.snap_token, {
+                            onSuccess: function(result) {
+                                window.location.href = "{{ url('/order/success') }}?order_id=" + result.order_id;
+                            },
+                            onPending: function(result) {
+                                window.location.href = "{{ url('/order/pending') }}/" + result.order_id;
+                            },
+                            onError: function() {
+                                btn.prop('disabled', false).html(originalText);
+                                Swal.fire('Error', 'Pembayaran gagal.', 'error');
+                            },
+                            onClose: function() {
+                                btn.prop('disabled', false).html(originalText);
+                            }
+                        });
+                    } else if (response.error) {
+                        Swal.fire('Stok Tidak Cukup', response.error, 'error');
+                        btn.prop('disabled', false).html(originalText);
+                    }
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false).html(originalText);
+                    Swal.fire('Gagal', 'Terjadi kesalahan pada server pembayaran.', 'error');
+                }
+            });
+        });
+    });
+</script>
+@endsection

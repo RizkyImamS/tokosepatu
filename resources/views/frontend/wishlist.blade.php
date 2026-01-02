@@ -60,4 +60,117 @@
         @endforelse
     </div>
 </div>
+<script>
+    $(document).on('click', '.btn-wishlist', function(e) {
+        e.preventDefault();
+        let btn = $(this);
+        let icon = btn.find('i');
+        let sepatuId = btn.data('id');
+
+        btn.prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('wishlist.toggle') }}",
+            method: "POST",
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                sepatu_id: sepatuId
+            },
+            success: function(response) {
+                btn.prop('disabled', false);
+
+                // Update Badge Wishlist
+                $('.wishlist-badge').text(response.wishlist_count).hide().fadeIn();
+
+                if (response.status === 'added') {
+                    btn.removeClass('btn-outline-dark').addClass('btn-danger text-white');
+                    icon.removeClass('far').addClass('fas');
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-start',
+                        icon: 'success',
+                        title: 'Wishlist',
+                        text: 'Berhasil ditambahkan ke koleksi.',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                } else {
+                    btn.removeClass('btn-danger text-white').addClass('btn-outline-dark');
+                    icon.removeClass('fas').addClass('far');
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-start',
+                        icon: 'info',
+                        title: 'Wishlist',
+                        text: 'Dihapus dari koleksi.',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }
+            },
+            error: function() {
+                btn.prop('disabled', false);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops',
+                    text: 'Gagal memproses wishlist.'
+                });
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $(document).on('click', '.btn-remove-wishlist', function(e) {
+            e.preventDefault();
+            let id = $(this).data('id');
+            let card = $(`#wishlist-item-${id}`);
+
+            Swal.fire({
+                title: 'Hapus Produk?',
+                text: "Produk akan dihapus dari wishlist Anda.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('wishlist.toggle') }}",
+                        method: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            sepatu_id: id
+                        },
+                        success: function(response) {
+                            if (response.status === 'removed') {
+                                card.fadeOut(400, function() {
+                                    $(this).remove();
+                                    // Cek jika sudah tidak ada item lagi
+                                    if ($('.wishlist-item').length === 0) {
+                                        location.reload();
+                                    }
+                                });
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Terhapus!',
+                                    text: 'Produk telah dihapus dari wishlist.',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+
+                                $('.wishlist-badge').text(response.wishlist_count);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
 @endsection

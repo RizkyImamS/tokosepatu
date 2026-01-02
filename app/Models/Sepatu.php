@@ -10,14 +10,18 @@ class Sepatu extends Model
     protected $fillable = [
         'kategori_sepatu_id',
         'nama_sepatu',
-        'slug',
         'merk',
         'harga',
-        'stok',
-        'ukuran',
+        'stok_per_ukuran',
         'warna',
         'deskripsi',
         'gambar',
+        'slug'
+    ];
+
+    // Tambahkan ini agar data JSON otomatis jadi Array PHP
+    protected $casts = [
+        'stok_per_ukuran' => 'array',
     ];
 
     public function kategori()

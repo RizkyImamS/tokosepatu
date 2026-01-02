@@ -294,68 +294,80 @@
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
 
     <script>
-        $('.add-to-cart-btn').click(function(e) {
-            e.preventDefault();
-            let id = $(this).data('id');
-            let button = $(this);
-            let originalHtml = button.html();
-
-            button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-
-            $.ajax({
-                url: "{{ url('/cart/add') }}/" + id,
-                method: "POST",
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    button.prop('disabled', false).html(originalHtml);
-
-                    // Update Badge Keranjang
-                    let cartBadge = $('.fa-shopping-cart').parent().find('.badge');
-                    if (cartBadge.length) {
-                        cartBadge.text(response.cart_count).hide().fadeIn();
-                    } else {
-                        $('.fa-shopping-cart').parent().append(`<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">${response.cart_count}</span>`);
-                    }
-
-                    // Notifikasi Toast
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-start', // Diubah ke kanan atas agar tidak tertutup navbar mobile
-                        icon: 'success',
-                        title: 'Keranjang Diperbarui',
-                        text: 'Sepatu berhasil ditambahkan!',
-                        showConfirmButton: false,
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
-                },
-                error: function() {
-                    button.prop('disabled', false).html(originalHtml);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Terjadi kesalahan sistem.'
-                    });
-                }
-            });
-        });
-    </script>
-
-    <script>
         $(document).ready(function() {
-            $('.btn-remove-cart').click(function(e) {
+            // Pengaturan Dasar SweetAlert Toast
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-start',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+            });
+
+            // --- 1. TAMBAH KE KERANJANG ---
+            $(document).on('click', '.add-to-cart-btn', function(e) {
+                e.preventDefault();
                 let id = $(this).data('id');
-                let row = $(this).closest('tr'); // Ambil baris tabelnya
+                let ukuran = $('input[name="ukuran"]:checked').val();
+                let button = $(this);
+                let originalHtml = button.html();
+
+                // Validasi jika input ukuran ada tapi belum dipilih
+                if ($('input[name="ukuran"]').length > 0 && !ukuran) {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Pilih ukuran dulu!'
+                    });
+                    return;
+                }
+
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.ajax({
+                    url: "{{ url('/cart/add') }}/" + id,
+                    method: "POST",
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        ukuran: ukuran
+                    },
+                    success: function(response) {
+                        button.prop('disabled', false).html(originalHtml);
+
+                        // Update Badge Keranjang secara dinamis
+                        let cartBadge = $('.fa-shopping-cart').parent().find('.badge');
+                        if (cartBadge.length) {
+                            cartBadge.text(response.cart_count).hide().fadeIn();
+                        } else {
+                            $('.fa-shopping-cart').parent().append(`<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">${response.cart_count}</span>`);
+                        }
+
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Produk masuk keranjang.'
+                        });
+                    },
+                    error: function() {
+                        button.prop('disabled', false).html(originalHtml);
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Gagal menambahkan produk.'
+                        });
+                    }
+                });
+            });
+
+            // --- 2. HAPUS DARI KERANJANG (Halaman Cart) ---
+            $(document).on('click', '.btn-remove-cart', function(e) {
+                let id = $(this).data('id');
+                let row = $(this).closest('tr');
 
                 Swal.fire({
                     title: 'Hapus item?',
-                    text: "Sepatu ini akan dikeluarkan dari keranjang.",
+                    text: "Sepatu akan dikeluarkan dari keranjang.",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
                     confirmButtonText: 'Ya, hapus!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
@@ -367,192 +379,115 @@
                                 _token: '{{ csrf_token() }}'
                             },
                             success: function(response) {
-                                // Hilangkan baris tabel dengan animasi
                                 row.fadeOut(400, function() {
                                     $(this).remove();
-                                    // Jika keranjang kosong setelah dihapus, refresh halaman untuk tampilkan pesan 'Kosong'
-                                    if ($('tbody tr').length == 0) {
-                                        location.reload();
-                                    }
+                                    if ($('tbody tr').length == 0) location.reload();
                                 });
-
-                                // Update angka di navbar
                                 $('.badge.rounded-pill.bg-danger').text(response.cart_count);
-
-                                Swal.fire(
-                                    'Dihapus!',
-                                    'Produk telah dihapus dari keranjang.',
-                                    'success'
-                                );
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Terhapus dari keranjang'
+                                });
                             }
                         });
                     }
                 });
             });
-        });
-    </script>
-    <script>
-        $('#formCheckout').on('submit', function(e) {
-            e.preventDefault();
 
-            const btn = $(this).find('button[type="submit"]');
-            const originalText = btn.html();
-
-            // Validasi input
-            if ($('input[name="customer_name"]').val() == "" || $('input[name="phone"]').val() == "" || $('textarea[name="address"]').val() == "") {
-                alert('Harap isi semua informasi pengiriman');
-                return;
-            }
-
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memproses...');
-
-            $.ajax({
-                url: "{{ route('cart.proses') }}",
-                method: "POST",
-                data: $(this).serialize(),
-                success: function(response) {
-                    if (response.snap_token) {
-                        // MEMANGGIL MODAL MIDTRANS
-                        window.snap.pay(response.snap_token, {
-                            onSuccess: function(result) {
-                                // Pembayaran Berhasil
-                                window.location.href = "{{ url('/order/success') }}?order_id=" + result.order_id;
-                            },
-                            onPending: function(result) {
-                                // Pembayaran Menunggu (User menutup snap sebelum bayar / pilih e-wallet tapi belum scan)
-                                window.location.href = "{{ url('/order/pending') }}/" + result.order_id;
-                            },
-                            onError: function(result) {
-                                // Pembayaran Error
-                                alert("Terjadi kesalahan pada sistem pembayaran.");
-                                btn.prop('disabled', false).html(originalText);
-                            },
-                            onClose: function() {
-                                // User menutup popup modal tanpa bayar
-                                alert('Anda menutup jendela tanpa menyelesaikan pembayaran.');
-                                btn.prop('disabled', false).html(originalText);
-                            }
-                        });
-                    } else if (response.error) {
-                        alert(response.error);
-                        btn.prop('disabled', false).html(originalText);
-                    }
-                },
-                error: function(xhr) {
-                    console.log(xhr.responseText);
-                    alert('Gagal terhubung ke server. Pastikan Server Key Midtrans sudah benar.');
-                    btn.prop('disabled', false).html(originalText);
-                }
-            });
-        });
-    </script>
-    <script>
-        $(document).on('click', '.btn-wishlist', function(e) {
-            e.preventDefault();
-            let btn = $(this);
-            let icon = btn.find('i');
-            let sepatuId = btn.data('id');
-
-            btn.prop('disabled', true);
-
-            $.ajax({
-                url: "{{ route('wishlist.toggle') }}",
-                method: "POST",
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
-                    sepatu_id: sepatuId
-                },
-                success: function(response) {
-                    btn.prop('disabled', false);
-
-                    // Update Badge Wishlist
-                    $('.wishlist-badge').text(response.wishlist_count).hide().fadeIn();
-
-                    if (response.status === 'added') {
-                        btn.removeClass('btn-outline-dark').addClass('btn-danger text-white');
-                        icon.removeClass('far').addClass('fas');
-
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-start',
-                            icon: 'success',
-                            title: 'Wishlist',
-                            text: 'Berhasil ditambahkan ke koleksi.',
-                            showConfirmButton: false,
-                            timer: 2000
-                        });
-                    } else {
-                        btn.removeClass('btn-danger text-white').addClass('btn-outline-dark');
-                        icon.removeClass('fas').addClass('far');
-
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-start',
-                            icon: 'info',
-                            title: 'Wishlist',
-                            text: 'Dihapus dari koleksi.',
-                            showConfirmButton: false,
-                            timer: 2000
-                        });
-                    }
-                },
-                error: function() {
-                    btn.prop('disabled', false);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops',
-                        text: 'Gagal memproses wishlist.'
-                    });
-                }
-            });
-        });
-    </script>
-    <script>
-        $(document).ready(function() {
-            $(document).on('click', '.btn-remove-wishlist', function(e) {
+            // --- 3. TOGGLE WISHLIST (Tambah/Hapus) ---
+            $(document).on('click', '.btn-wishlist', function(e) {
                 e.preventDefault();
-                let id = $(this).data('id');
-                let card = $(`#wishlist-item-${id}`);
+                let btn = $(this);
+                let icon = btn.find('i');
+                let sepatuId = btn.data('id');
 
-                Swal.fire({
-                    title: 'Hapus Produk?',
-                    text: "Produk akan dihapus dari wishlist Anda.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, Hapus',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "{{ route('wishlist.toggle') }}",
-                            method: "POST",
-                            data: {
-                                _token: "{{ csrf_token() }}",
-                                sepatu_id: id
-                            },
-                            success: function(response) {
-                                if (response.status === 'removed') {
-                                    card.fadeOut(400, function() {
-                                        $(this).remove();
-                                        // Cek jika sudah tidak ada item lagi
-                                        if ($('.wishlist-item').length === 0) {
-                                            location.reload();
-                                        }
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: "{{ route('wishlist.toggle') }}",
+                    method: "POST",
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        sepatu_id: sepatuId
+                    },
+                    success: function(response) {
+                        btn.prop('disabled', false);
+                        $('.wishlist-badge').text(response.wishlist_count).hide().fadeIn();
+
+                        if (response.status === 'added') {
+                            btn.removeClass('btn-outline-dark').addClass('btn-danger text-white');
+                            icon.removeClass('far').addClass('fas');
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Ditambah ke Wishlist'
+                            });
+                        } else {
+                            btn.removeClass('btn-danger text-white').addClass('btn-outline-dark');
+                            icon.removeClass('fas').addClass('far');
+                            Toast.fire({
+                                icon: 'info',
+                                title: 'Dihapus dari Wishlist'
+                            });
+                        }
+                    }
+                });
+            });
+
+            // --- 4. CHECKOUT PROSES ---
+            $('#formCheckout').on('submit', function(e) {
+                e.preventDefault();
+                const btn = $(this).find('button[type="submit"]');
+                const originalText = btn.html();
+
+                // Validasi Sederhana
+                if (!$('input[name="customer_name"]').val() || !$('input[name="phone"]').val()) {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Data belum lengkap!'
+                    });
+                    return;
+                }
+
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memproses...');
+
+                $.ajax({
+                    url: "{{ route('cart.proses') }}",
+                    method: "POST",
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.snap_token) {
+                            window.snap.pay(response.snap_token, {
+                                onSuccess: function(result) {
+                                    window.location.href = "{{ url('/order/success') }}?order_id=" + result.order_id;
+                                },
+                                onPending: function(result) {
+                                    window.location.href = "{{ url('/order/pending') }}/" + result.order_id;
+                                },
+                                onError: function() {
+                                    btn.prop('disabled', false).html(originalText);
+                                    Toast.fire({
+                                        icon: 'error',
+                                        title: 'Pembayaran Gagal'
                                     });
-
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Terhapus!',
-                                        text: 'Produk telah dihapus dari wishlist.',
-                                        timer: 1500,
-                                        showConfirmButton: false
+                                },
+                                onClose: function() {
+                                    btn.prop('disabled', false).html(originalText);
+                                    Toast.fire({
+                                        icon: 'info',
+                                        title: 'Pembayaran Dibatalkan'
                                     });
-
-                                    $('.wishlist-badge').text(response.wishlist_count);
                                 }
-                            }
+                            });
+                        } else if (response.error) {
+                            btn.prop('disabled', false).html(originalText);
+                            Swal.fire('Gagal', response.error, 'error');
+                        }
+                    },
+                    error: function() {
+                        btn.prop('disabled', false).html(originalText);
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Koneksi Server Gagal'
                         });
                     }
                 });

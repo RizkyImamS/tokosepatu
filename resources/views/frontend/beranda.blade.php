@@ -25,6 +25,8 @@
         border-radius: 20px;
         overflow: hidden;
         border: 1px solid #eee;
+        display: flex;
+        flex-direction: column;
     }
 
     .card-product:hover {
@@ -56,7 +58,7 @@
 
     .btn-buy {
         border-radius: 12px;
-        padding: 10px 20px;
+        padding: 8px 15px;
         font-weight: 600;
         transition: all 0.3s;
     }
@@ -74,6 +76,19 @@
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
         line-clamp: 2;
+    }
+
+    .size-badge-container {
+        min-height: 25px;
+    }
+
+    .badge-size {
+        font-size: 0.65rem;
+        background: #f0f2f5;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        padding: 2px 6px;
+        border-radius: 4px;
     }
 </style>
 
@@ -111,9 +126,9 @@
                 <label class="form-label fw-bold small text-muted text-uppercase">Ukuran</label>
                 <select name="ukuran" class="form-select bg-light border-0">
                     <option value="">Semua</option>
-                    @for($i = 37; $i <= 45; $i++)
-                        <option value="{{ $i }}" {{ request('ukuran') == $i ? 'selected' : '' }}>{{ $i }}</option>
-                        @endfor
+                    @foreach(['37','38','39','40','41','42','43'] as $sz)
+                    <option value="{{ $sz }}" {{ request('ukuran') == $sz ? 'selected' : '' }}>{{ $sz }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -152,10 +167,10 @@
         <hr class="flex-grow-1 ms-4 d-none d-md-block opacity-25">
     </div>
 
-    <div id="produk" class="row">
+    <div class="row">
         @forelse($sepatu as $item)
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card h-100 border-0 shadow-sm card-product">
+            <div class="card h-100 border-0 shadow-sm card-product position-relative">
                 <span class="brand-badge">{{ $item->merk }}</span>
 
                 @if($item->gambar)
@@ -166,10 +181,16 @@
                 </div>
                 @endif
 
-                <div class="card-body p-4">
-                    <div class="text-muted small mb-1 d-flex justify-content-between">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="text-muted small mb-2 d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-tag me-1"></i> {{ $item->kategori->nama_kategori ?? 'Umum' }}</span>
-                        <span><i class="fas fa-ruler-combined me-1"></i> {{ $item->ukuran ?? '-' }}</span>
+
+                        {{-- Hitung Total Stok dari JSON --}}
+                        @php $totalStok = array_sum($item->stok_per_ukuran ?? []); @endphp
+
+                        <span class="badge {{ $totalStok > 0 ? 'text-success' : 'text-danger' }} bg-light border-0 px-0">
+                            <i class="fas fa-check-circle me-1"></i> {{ $totalStok > 0 ? 'Tersedia' : 'Habis' }}
+                        </span>
                     </div>
 
                     <h5 class="card-title fw-bold product-title mb-2 text-dark">{{ $item->nama_sepatu }}</h5>
@@ -178,25 +199,24 @@
                         Rp {{ number_format($item->harga, 0, ',', '.') }}
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge {{ $item->stok > 0 ? 'bg-light text-success' : 'bg-light text-danger' }} rounded-pill p-2 px-3">
-                            <i class="fas fa-box me-1"></i> {{ $item->stok > 0 ? 'Stok: '.$item->stok : 'Habis' }}
-                        </span>
+                    {{-- Daftar Ukuran Tersedia --}}
+                    <div class="size-badge-container mb-3 d-flex flex-wrap gap-1">
+                        @php $count = 0; @endphp
+                        @foreach($item->stok_per_ukuran ?? [] as $size => $stock)
+                        @if($stock > 0)
+                        <span class="badge-size">{{ $size }}</span>
+                        @endif
+                        @endforeach
+                        @if(count(array_filter($item->stok_per_ukuran ?? [])) > 5)
+                        <span class="text-muted small">+ lainnya</span>
+                        @endif
+                    </div>
 
-                        <div class="d-flex gap-2">
-                            <a href="{{ url('/sepatu/'.$item->slug) }}" class="btn btn-outline-primary btn-sm rounded-circle shadow-sm" title="Lihat Detail">
-                                <i class="fas fa-eye"></i>
+                    <div class="mt-auto pt-3 border-top">
+                        <div class="d-grid gap-2 d-flex">
+                            <a href="{{ url('/sepatu/'.$item->slug) }}" class="btn btn-outline-primary flex-grow-1 btn-buy {{ $totalStok <= 0 ? 'disabled' : '' }}">
+                                <i class="fas fa-cart-plus"></i> Beli Sekarang
                             </a>
-
-                            <form action="{{ route('cart.add', $item->id) }}" method="POST">
-                                @csrf
-                                <button type="button"
-                                    class="btn btn-primary btn-buy py-1 px-3 add-to-cart-btn"
-                                    data-id="{{ $item->id }}"
-                                    {{ $item->stok <= 0 ? 'disabled' : '' }}>
-                                    <i class="fas fa-cart-plus"></i>
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -206,7 +226,7 @@
         <div class="col-12 text-center py-5">
             <img src="https://illustrations.popsy.co/gray/not-found.svg" alt="Empty" style="width: 200px" class="mb-4">
             <h4 class="text-muted">Maaf, koleksi sepatu belum tersedia.</h4>
-            <p>Silakan hubungi admin untuk ketersediaan barang.</p>
+            <p>Silakan gunakan filter lain atau hubungi admin.</p>
         </div>
         @endforelse
     </div>

@@ -38,14 +38,22 @@
             <input type="hidden" name="harga" id="harga">
         </div>
 
-        <div class="mb-3">
-            <label>Stok</label>
-            <input type="number" name="stok" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label>Ukuran</label>
-            <input type="text" name="ukuran" class="form-control" required>
+        <hr>
+        <div class="mb-4">
+            <label class="fw-bold d-block mb-2">Stok per Ukuran</label>
+            <div class="row g-3 bg-light p-3 rounded border">
+                @foreach(['37', '38', '39', '40', '41', '42', '43'] as $size)
+                <div class="col-md-3 col-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">Size {{ $size }}</span>
+                        <input type="number" name="stok_per_ukuran[{{ $size }}]" class="form-control" value="0" min="0">
+                    </div>
+                </div>
+                @endforeach
+                <div class="col-12">
+                    <small class="text-muted">* Isi 0 jika ukuran tersebut tidak tersedia.</small>
+                </div>
+            </div>
         </div>
 
         <div class="mb-3">
@@ -69,34 +77,35 @@
 </div>
 
 <script>
+    // Logika Auto-Slug
     const judul = document.querySelector('#nama_sepatu');
     const slug = document.querySelector('#slug');
 
     judul.addEventListener('keyup', function() {
         let preslug = judul.value;
-        preslug = preslug.replace(/[^a-zA-Z0-9\s]/g, ""); // Hapus karakter spesial
-        preslug = preslug.toLowerCase();
-        preslug = preslug.replace(/\s+/g, '-'); // Ganti spasi dengan tanda hubung
+        preslug = preslug.toLowerCase()
+            .replace(/[^a-z0-9\s]/g, "") // Hanya huruf, angka, spasi
+            .replace(/\s+/g, '-'); // Ganti spasi dengan -
         slug.value = preslug;
     });
+
+    // Logika Format Rupiah & Hidden Input
     const hargaRupiah = document.getElementById('harga_rupiah');
     const hargaHidden = document.getElementById('harga');
+
     hargaRupiah.addEventListener('input', function(e) {
-        let value = e.target.value;
-        value = value.replace(/[^,\d]/g, '').toString();
-        const split = value.split(',');
-        let sisa = split[0].length % 3;
-        let rupiah = split[0].substr(0, sisa);
-        const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+        let value = e.target.value.replace(/\D/g, ""); // Ambil hanya angka saja
 
-        if (ribuan) {
-            const separator = sisa ? '.' : '';
-            rupiah += separator + ribuan.join('.');
+        if (value) {
+            hargaHidden.value = value; // Simpan angka bersih ke input hidden
+
+            // Format angka menjadi ribuan (titik)
+            let formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            e.target.value = formatted;
+        } else {
+            hargaHidden.value = "";
+            e.target.value = "";
         }
-
-        rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
-        e.target.value = rupiah ? 'Rp. ' + rupiah : '';
-        hargaHidden.value = value.replace(/\./g, '');
     });
 </script>
 @endsection
