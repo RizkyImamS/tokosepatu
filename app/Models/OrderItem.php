@@ -14,6 +14,7 @@ class OrderItem extends Model
         'sepatu_id',
         'quantity',
         'price',
+        'size',
     ];
 
     public function sepatu()

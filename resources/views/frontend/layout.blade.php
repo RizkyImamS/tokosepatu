@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'ShoeStore - Koleksi Sepatu Terbaik')</title>
+    <title>@yield('title', 'SuperShoe - Koleksi Sepatu Terbaik')</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -163,7 +163,7 @@
     <nav class="navbar navbar-expand-lg navbar-light sticky-top shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
-                <i class="fas fa-bolt me-2 text-primary"></i>SHOE<span>STORE</span>
+                <i class="fas fa-bolt me-2 text-primary"></i>SUPER<span>STORE</span>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -300,7 +300,7 @@
                 toast: true,
                 position: 'top-start',
                 showConfirmButton: false,
-                timer: 2500,
+                timer: 1500,
                 timerProgressBar: true
             });
 
@@ -379,7 +379,7 @@
                                 _token: '{{ csrf_token() }}'
                             },
                             success: function(response) {
-                                row.fadeOut(400, function() {
+                                row.fadeOut(1000, function() {
                                     $(this).remove();
                                     if ($('tbody tr').length == 0) location.reload();
                                 });
@@ -394,41 +394,59 @@
                 });
             });
 
-            // --- 3. TOGGLE WISHLIST (Tambah/Hapus) ---
+            // --- 3. TOGGLE WISHLIST (Tambah/Hapus dari Katalog) ---
             $(document).on('click', '.btn-wishlist', function(e) {
                 e.preventDefault();
-                let btn = $(this);
+
+                // Menggunakan currentTarget untuk memastikan kita mendapat elemen tombolnya, bukan icon di dalamnya
+                let btn = $(e.currentTarget);
                 let icon = btn.find('i');
                 let sepatuId = btn.data('id');
 
-                btn.prop('disabled', true);
+                if (!sepatuId) return; // Guard clause jika ID tidak ditemukan
+
+                btn.prop('disabled', true); // Mencegah spam klik
 
                 $.ajax({
                     url: "{{ route('wishlist.toggle') }}",
                     method: "POST",
                     data: {
-                        _token: '{{ csrf_token() }}',
+                        _token: $('meta[name="csrf-token"]').attr('content'), // Mengambil dari meta tag di head
                         sepatu_id: sepatuId
                     },
                     success: function(response) {
                         btn.prop('disabled', false);
-                        $('.wishlist-badge').text(response.wishlist_count).hide().fadeIn();
+
+                        // Update Badge Wishlist di Navbar
+                        if (response.wishlist_count !== undefined) {
+                            $('.wishlist-badge').text(response.wishlist_count).hide().fadeIn();
+                        }
 
                         if (response.status === 'added') {
-                            btn.removeClass('btn-outline-dark').addClass('btn-danger text-white');
-                            icon.removeClass('far').addClass('fas');
+                            // Berhasil Ditambah
+                            btn.removeClass('btn-outline-danger').addClass('btn-danger text-white');
+                            icon.removeClass('far fa-heart').addClass('fas fa-heart');
                             Toast.fire({
                                 icon: 'success',
                                 title: 'Ditambah ke Wishlist'
                             });
                         } else {
-                            btn.removeClass('btn-danger text-white').addClass('btn-outline-dark');
-                            icon.removeClass('fas').addClass('far');
+                            // Berhasil Dihapus
+                            btn.removeClass('btn-danger text-white').addClass('btn-outline-danger');
+                            icon.removeClass('fas fa-heart').addClass('far fa-heart');
                             Toast.fire({
                                 icon: 'info',
                                 title: 'Dihapus dari Wishlist'
                             });
                         }
+                    },
+                    error: function(xhr) {
+                        btn.prop('disabled', false);
+                        console.error(xhr.responseText);
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Gagal memproses Wishlist'
+                        });
                     }
                 });
             });
@@ -491,6 +509,81 @@
                         });
                     }
                 });
+            });
+        });
+
+        // --- 5. HAPUS ITEM DARI HALAMAN WISHLIST ---
+        // --- 5. HAPUS ITEM DARI HALAMAN WISHLIST ---
+        $(document).on('click', '.btn-remove-wishlist', function(e) {
+            e.preventDefault();
+
+            // Definisikan Toast di sini jika belum ada secara global
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-start',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+
+            let id = $(this).data('id');
+            // Mencari elemen pembungkus (card) terdekat agar lebih fleksibel
+            let card = $(this).closest('.wishlist-item, [id^="wishlist-item-"]');
+
+            Swal.fire({
+                title: 'Hapus dari koleksi?',
+                text: "Produk akan dihapus dari daftar keinginan Anda.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('wishlist.toggle') }}",
+                        method: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            sepatu_id: id
+                        },
+                        success: function(response) {
+                            if (response.status === 'removed') {
+                                // Efek visual menghapus baris/card
+                                card.fadeOut(1500, function() {
+                                    $(this).remove();
+
+                                    // Cek jika sudah tidak ada item lagi di halaman
+                                    if ($('.wishlist-item').length === 0) {
+                                        location.reload(); // Reload untuk tampilkan pesan "Wishlist Kosong"
+                                    }
+                                });
+
+                                // Update Badge di Navbar
+                                if (response.wishlist_count > 0) {
+                                    $('.wishlist-badge').text(response.wishlist_count).hide().fadeIn();
+                                } else {
+                                    $('.wishlist-badge').remove(); // Hapus badge jika 0
+                                }
+
+                                // Tampilkan Notifikasi Berhasil
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Dihapus!',
+                                    text: 'Produk berhasil dikeluarkan dari wishlist.'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Toast.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: 'Terjadi kesalahan saat menghapus produk.'
+                            });
+                        }
+                    });
+                }
             });
         });
     </script>

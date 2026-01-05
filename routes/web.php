@@ -74,6 +74,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
     // History / Riwayat
     Route::get('/riwayat', [SepatuController::class, 'riwayat'])->name('riwayat.index');
+    Route::delete('/riwayat/{id}', [SepatuController::class, 'riwayatDestroy'])->name('riwayat.destroy');
 
     // Kategori Sepatu (Custom Logic inside SepatuController)
     Route::controller(SepatuController::class)->group(function () {

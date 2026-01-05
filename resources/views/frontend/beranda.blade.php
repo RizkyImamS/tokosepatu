@@ -122,12 +122,14 @@
                 </select>
             </div>
 
-            <div class="col-lg-2 col-md-4">
-                <label class="form-label fw-bold small text-muted text-uppercase">Ukuran</label>
-                <select name="ukuran" class="form-select bg-light border-0">
-                    <option value="">Semua</option>
-                    @foreach(['37','38','39','40','41','42','43'] as $sz)
-                    <option value="{{ $sz }}" {{ request('ukuran') == $sz ? 'selected' : '' }}>{{ $sz }}</option>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label fw-bold small text-muted text-uppercase">Kategori</label>
+                <select name="kategori" class="form-select bg-light border-0">
+                    <option value="">Semua Kategori</option>
+                    @foreach($kategoriSepatu as $kat) {{-- Pastikan Anda mengirim data $kategoris dari Controller --}}
+                    <option value="{{ $kat->id }}" {{ request('kategori') == $kat->id ? 'selected' : '' }}>
+                        {{ $kat->nama_kategori }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -148,7 +150,7 @@
                         <i class="fas fa-filter me-1"></i> Terapkan
                     </button>
                     @if(request()->anyFilled(['search', 'max_price', 'ukuran', 'warna']))
-                    <a href="{{ url('/') }}" class="btn btn-link btn-sm text-decoration-none text-muted">Hapus Filter</a>
+                    <a href="{{ url('/') }}" class="btn btn-secondary btn-sm text-decoration-none text-white rounded-pill fw-bold">Hapus Filter</a>
                     @endif
                 </div>
             </div>

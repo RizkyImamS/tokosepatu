@@ -10,6 +10,7 @@
             <thead class="table-light">
                 <tr>
                     <th>Produk</th>
+                    <th>Ukuran</th>
                     <th>Harga</th>
                     <th>Jumlah</th>
                     <th>Subtotal</th>
@@ -30,6 +31,7 @@
                             </div>
                         </div>
                     </td>
+                    <td>{{ $details['ukuran'] }}</td>
                     <td>Rp {{ number_format($details['harga'], 0, ',', '.') }}</td>
                     <td>
                         <div class="input-group input-group-sm" style="width: 120px;">

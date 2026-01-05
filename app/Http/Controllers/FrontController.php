@@ -34,12 +34,12 @@ class FrontController extends Controller
             $query->where('harga', '<=', $request->max_price);
         }
 
-        // 3. filter warna dan ukuran
+        // 3. filter warna
         if ($request->filled('warna')) {
             $query->where('warna', $request->warna);
         }
-        if ($request->filled('ukuran')) {
-            $query->where('ukuran', $request->ukuran);
+        if ($request->filled('kategori')) {
+            $query->where('kategori_sepatu_id', $request->kategori);
         }
         $sepatu = $query->latest()->paginate(4);
         return view('frontend.beranda', compact('sepatu', 'konfigurasi', 'kategoriSepatu'));

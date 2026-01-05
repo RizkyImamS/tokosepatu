@@ -15,13 +15,6 @@
             <span class="badge bg-light text-dark">Total: {{ \App\Models\Order::count() }} Pesanan</span>
         </div>
         <div class="card-body">
-            @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
-
             @if($orders->isEmpty())
             <div class="text-center py-5">
                 <i class="fas fa-shopping-cart fa-3x text-secondary mb-3"></i>
@@ -70,9 +63,19 @@
                             </td>
                             <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#detailModal{{ $order->id }}">
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded" data-bs-toggle="modal" data-bs-target="#detailModal{{ $order->id }}">
                                     <i class="fas fa-search-plus"></i> Detail
                                 </button>
+                                <form action="{{ route('riwayat.destroy', $order->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus riwayat ini?')"
+                                    class="w-100 d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger mt-2 rounded">
+                                        <i class="fas fa-trash me-2"></i> Hapus
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         @endforeach
@@ -117,6 +120,7 @@
                     <thead>
                         <tr class="text-muted small">
                             <th>PRODUK</th>
+                            <th>UKURAN</th>
                             <th class="text-center">QTY</th>
                             <th class="text-end">HARGA</th>
                             <th class="text-end">SUBTOTAL</th>
@@ -126,6 +130,7 @@
                         @foreach($order->items as $item)
                         <tr>
                             <td>{{ $item->sepatu->nama_sepatu ?? 'Produk Dihapus' }}</td>
+                            <td class="text-center">{{ $item->size }}</td>
                             <td class="text-center">{{ $item->quantity }}</td>
                             <td class="text-end">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
                             <td class="text-end">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</td>

@@ -150,6 +150,11 @@
                 </div>
             </div>
 
+            <div class="product-description mb-5">
+                <h5 class="fw-bold text-dark mb-3">Deskripsi Produk</h5>
+                <p>{!! nl2br(e($sepatu->deskripsi)) !!}</p>
+            </div>
+
             <div class="product-description mb-4">
                 <h5 class="fw-bold text-dark mb-3">Pilih Ukuran</h5>
 
@@ -182,8 +187,8 @@
                             </button>
                         </div>
                         <div class="col-3">
-                            <button type="button" class="btn btn-outline-danger btn-cart w-100">
-                                <i class="far fa-heart"></i>
+                            <button class="btn btn-cart btn-outline-danger btn-wishlist" data-id="{{ $sepatu->id }}">
+                                <i class="{{ in_array($sepatu->id, session('wishlist', [])) ? 'fas' : 'far' }} fa-heart"></i>
                             </button>
                         </div>
                     </div>
@@ -191,11 +196,6 @@
                     <p class="text-danger small mt-3 mb-0 text-center"><i class="fas fa-info-circle"></i> Maaf, semua ukuran kosong.</p>
                     @endif
                 </div>
-            </div>
-
-            <div class="product-description mb-5">
-                <h5 class="fw-bold text-dark mb-3">Deskripsi Produk</h5>
-                <p>{!! nl2br(e($sepatu->deskripsi)) !!}</p>
             </div>
 
             <div class="pt-4 border-top">
@@ -206,121 +206,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    $(document).ready(function() {
-        // --- 1. LOGIC ADD TO CART ---
-        $(document).on('click', '.add-to-cart-btn', function(e) {
-            e.preventDefault();
-
-            let id = $(this).data('id');
-            let ukuran = $('input[name="ukuran"]:checked').val();
-            let btn = $(this);
-            let originalText = btn.html();
-
-            if (!ukuran) {
-                // Alert Peringatan di Atas Kiri
-                Swal.fire({
-                    toast: true,
-                    position: 'top-start',
-                    icon: 'warning',
-                    title: 'Pilih ukuran sepatu dulu ya!',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-                return;
-            }
-
-            // Loading state
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memproses...');
-
-            $.ajax({
-                url: "{{ url('/cart/add') }}/" + id,
-                method: "POST",
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    ukuran: ukuran
-                },
-                success: function(response) {
-                    btn.prop('disabled', false).html(originalText);
-
-                    // Update angka navbar
-                    $('.badge-cart-count').text(response.cart_count).hide().fadeIn();
-
-                    // Alert Berhasil di Atas Kiri
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-start',
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Size ' + ukuran + ' masuk keranjang.',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true
-                    });
-                },
-                error: function(xhr) {
-                    btn.prop('disabled', false).html(originalText);
-
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-start',
-                        icon: 'error',
-                        title: 'Oops!',
-                        text: 'Gagal menambahkan ke keranjang.',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                }
-            });
-        });
-
-        // --- 2. LOGIC CHECKOUT ---
-        $('#formCheckout').on('submit', function(e) {
-            e.preventDefault();
-            const btn = $(this).find('button[type="submit"]');
-            const originalText = btn.html();
-
-            if ($('input[name="customer_name"]').val() == "" || $('input[name="phone"]').val() == "") {
-                Swal.fire('Info', 'Harap isi informasi pengiriman', 'info');
-                return;
-            }
-
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memproses...');
-
-            $.ajax({
-                url: "{{ route('cart.proses') }}",
-                method: "POST",
-                data: $(this).serialize(),
-                success: function(response) {
-                    if (response.snap_token) {
-                        window.snap.pay(response.snap_token, {
-                            onSuccess: function(result) {
-                                window.location.href = "{{ url('/order/success') }}?order_id=" + result.order_id;
-                            },
-                            onPending: function(result) {
-                                window.location.href = "{{ url('/order/pending') }}/" + result.order_id;
-                            },
-                            onError: function() {
-                                btn.prop('disabled', false).html(originalText);
-                                Swal.fire('Error', 'Pembayaran gagal.', 'error');
-                            },
-                            onClose: function() {
-                                btn.prop('disabled', false).html(originalText);
-                            }
-                        });
-                    } else if (response.error) {
-                        Swal.fire('Stok Tidak Cukup', response.error, 'error');
-                        btn.prop('disabled', false).html(originalText);
-                    }
-                },
-                error: function(xhr) {
-                    btn.prop('disabled', false).html(originalText);
-                    Swal.fire('Gagal', 'Terjadi kesalahan pada server pembayaran.', 'error');
-                }
-            });
-        });
-    });
-</script>
 @endsection

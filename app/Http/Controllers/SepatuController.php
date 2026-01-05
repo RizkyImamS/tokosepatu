@@ -175,8 +175,10 @@ class SepatuController extends Controller
         // Mengambil SEMUA order, diurutkan dari yang terbaru (latest)
         // with(['items.sepatu']) memastikan data detail barang ikut terbawa tanpa query berulang
         $orders = Order::with(['items.sepatu'])->latest()->paginate(10);
+        $sepatu = Sepatu::all();
+        $kategoriSepatu = KategoriSepatu::all();
 
-        return view('admin.riwayat.index', compact('orders'));
+        return view('admin.riwayat.index', compact('orders', 'sepatu', 'kategoriSepatu'));
     }
 
     public function updateStatus(Request $request, $id)
@@ -187,5 +189,13 @@ class SepatuController extends Controller
         ]);
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
+    }
+
+    public function riwayatDestroy($id)
+    {
+        // Code to delete kategori sepatu
+        $order = Order::findOrFail($id);
+        $order->delete();
+        return redirect()->route('riwayat.index')->with('success', 'Riwayat sepatu berhasil dihapus.');
     }
 }

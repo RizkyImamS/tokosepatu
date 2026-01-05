@@ -101,6 +101,22 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Produk dihapus');
     }
 
+    // File: app/Http/Controllers/CartController.php
+
+    public function checkout()
+    {
+        // Mengambil data keranjang dari session
+        $cart = session()->get('cart', []);
+        $sepatu = Sepatu::all();
+        $kategoriSepatu = KategoriSepatu::all();
+
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
+        }
+
+        return view('frontend.checkout', compact('cart', 'kategoriSepatu', 'sepatu'));
+    }
+
     public function prosesPembayaran(Request $request)
     {
         try {
@@ -131,6 +147,7 @@ class CartController extends Controller
                     'id' => $key,
                     'price' => (int)$item['harga'],
                     'quantity' => (int)$item['quantity'],
+                    'size' => $item['ukuran'],
                     'name' => substr($item['nama'] . ' (' . $item['ukuran'] . ')', 0, 50),
                 ];
             }
@@ -142,6 +159,7 @@ class CartController extends Controller
                     'id' => 'SHIPPING',
                     'price' => $shippingFee,
                     'quantity' => 1,
+                    'size' => $item['ukuran'],
                     'name' => 'Ongkir ' . $shippingMethod,
                 ];
             }
@@ -156,6 +174,7 @@ class CartController extends Controller
                 'phone'         => $request->phone,
                 'address'       => $request->address,
                 'total_price'   => $total,
+                'size'          => $item['ukuran'],
                 'status'        => 'pending',
                 'shipping_method' => $shippingMethod,
                 'shipping_fee'    => $shippingFee,
@@ -167,7 +186,7 @@ class CartController extends Controller
                     'sepatu_id'  => $item['id'],
                     'quantity'   => $item['quantity'],
                     'price'      => $item['harga'],
-                    'ukuran'     => $item['ukuran'], // Pastikan kolom 'ukuran' ada di tabel order_items
+                    'size'     => $item['ukuran'], // Pastikan kolom 'size' ada di tabel order_items
                 ]);
             }
 
