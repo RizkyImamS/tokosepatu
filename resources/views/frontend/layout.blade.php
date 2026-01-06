@@ -5,7 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'SuperShoe - Koleksi Sepatu Terbaik')</title>
+    <meta property="og:title" content="@yield('title', 'SuperShoe')">
+    <meta property="og:description" content="Koleksi sepatu original terbaik dengan harga bersaing.">
+    <meta property="og:image" content="@yield('og_image', asset('default-share.jpg'))">
+    <meta property="og:type" content="website">
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -155,6 +158,19 @@
         .section-padding {
             padding: 60px 0;
         }
+
+        .wa-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25d366;
+            color: #fff;
+            border-radius: 50px;
+            padding: 15px 20px;
+            z-index: 1000;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+        }
     </style>
 </head>
 
@@ -163,7 +179,7 @@
     <nav class="navbar navbar-expand-lg navbar-light sticky-top shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
-                <i class="fas fa-bolt me-2 text-primary"></i>SUPER<span>STORE</span>
+                <i class="fas fa-bolt me-2 text-primary"></i>SUPER<span>SHOE</span>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
